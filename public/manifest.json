@@ -1,0 +1,16 @@
+{
+  "name": "AlphaFlow",
+  "short_name": "AlphaFlow",
+  "description": "Transformez du texte en instructions machine",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "type": "image/svg+xml"
+    }
+  ]
+}
