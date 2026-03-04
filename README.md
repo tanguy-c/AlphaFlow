@@ -1,4 +1,4 @@
-# AlphaFlow
+# [AlphaFlow](https://tanguy-c.github.io/AlphaFlow/)
 
 AlphaFlow helps turn text into clear, step-by-step machine instructions.
 
@@ -9,9 +9,7 @@ Instead of checking code charts by hand every time, you can use AlphaFlow to:
 - follow each code and mode change in order
 - search the full code reference for your machine
 
-The project page is here:
-
-https://github.com/tanguy-c/AlphaFlow
+Use the app here: https://tanguy-c.github.io/AlphaFlow/
 
 ## Share Your Machine Config
 

@@ -1,7 +1,7 @@
 {
   "id": "bernette-b38",
   "name": "Bernette b38",
-  "description": "Machine à coudre Bernette b38",
+  "description": "Machine à coudre",
   "codeFormat": { "padding": 2 },
   "caseSensitive": true,
   "defaultModeId": "mode4",

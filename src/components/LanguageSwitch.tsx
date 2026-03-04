@@ -1,3 +1,4 @@
+import { Languages } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 type LanguageSwitchProps = {
@@ -25,7 +26,7 @@ export default function LanguageSwitch({ variant = 'header' }: LanguageSwitchPro
       aria-label={t('common.language')}
       title={t('common.language')}
     >
-      <span className="text-base">{i18n.language === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
+      <Languages size={18} />
       <span className="font-medium uppercase text-xs tracking-wide">{i18n.language}</span>
     </button>
   );

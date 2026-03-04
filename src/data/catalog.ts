@@ -8,6 +8,8 @@ export interface CatalogEntry {
   id: string;
   name: string;
   description: string;
+  modesCount: number;
+  charsCount: number;
 }
 
 /** All built-in machines shipped with AlphaFlow. */
@@ -22,6 +24,8 @@ export function getCatalogEntries(): CatalogEntry[] {
     id: m.id,
     name: m.name,
     description: m.description,
+    modesCount: m.modes.length,
+    charsCount: m.modes.reduce((sum, mode) => sum + mode.characters.length, 0),
   }));
 }
 

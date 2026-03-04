@@ -1,16 +1,27 @@
-import { useCallback, useEffect, useRef } from 'react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  FileText,
+  PartyPopper,
+  RefreshCw,
+  Volume2,
+  VolumeOff,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
+import ContextRibbon from '../components/guide/ContextRibbon';
+import StepCard from '../components/guide/StepCard';
 import { useVoice } from '../hooks/useVoice';
 import { useSessionStore } from '../providers/SessionProvider';
-import type { Instruction } from '../types/instruction';
-import { getStepContext } from '../utils/instructionGenerator';
+import { getCodeInstructions, getStepContext } from '../utils/instructionGenerator';
 
 export default function GuidePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { instructions, currentStep, isCompleted, nextStep, previousStep, restart } =
+  const { instructions, currentStep, isCompleted, nextStep, previousStep, restart, goToStep } =
     useSessionStore();
   const {
     enabled: voiceEnabled,
@@ -62,11 +73,43 @@ export default function GuidePage() {
     if (isCompleted) stopVoice();
   }, [isCompleted, stopVoice]);
 
+  const instruction = instructions.length > 0 ? instructions[currentStep] : null;
+  const context =
+    instructions.length > 0 ? getStepContext(instructions, currentStep) : { before: [], after: [] };
+  const codeInstructions = useMemo(() => getCodeInstructions(instructions), [instructions]);
+  const totalChars = codeInstructions.length;
+
+  // Count how many characters (code instructions) have been completed up to current step
+  const charsCompleted = useMemo(() => {
+    let count = 0;
+    for (let i = 0; i <= currentStep; i++) {
+      if (instructions[i]?.type === 'code') count++;
+    }
+    return count;
+  }, [instructions, currentStep]);
+
+  // Build a mapping from character index to step index for the slider
+  const charToStep = useMemo(() => {
+    const map: number[] = [];
+    for (let i = 0; i < instructions.length; i++) {
+      if (instructions[i].type === 'code') {
+        map.push(i);
+      }
+    }
+    return map;
+  }, [instructions]);
+
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const charIndex = parseInt(e.target.value, 10);
+    const stepIndex = charToStep[charIndex - 1] ?? 0;
+    goToStep(stepIndex);
+  };
+
   if (instructions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-up">
-        <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-3xl mb-5">
-          📝
+        <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-5">
+          <FileText size={32} className="text-gray-400 dark:text-gray-500" />
         </div>
         <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">
           {t('guide.noInstructions')}
@@ -88,8 +131,8 @@ export default function GuidePage() {
   if (isCompleted) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-up">
-        <div className="w-20 h-20 rounded-full bg-green-50 dark:bg-green-950 flex items-center justify-center text-5xl mb-5">
-          🎉
+        <div className="w-20 h-20 rounded-full bg-green-50 dark:bg-green-950 flex items-center justify-center mb-5">
+          <PartyPopper size={40} className="text-green-500" />
         </div>
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
           {t('guide.completed')}
@@ -101,9 +144,9 @@ export default function GuidePage() {
           <button
             type="button"
             onClick={restart}
-            className="btn-press bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-md"
+            className="btn-press flex items-center gap-2 bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-md"
           >
-            ↺ {t('guide.restart')}
+            <RefreshCw size={16} /> {t('guide.restart')}
           </button>
           <button
             type="button"
@@ -116,9 +159,6 @@ export default function GuidePage() {
       </div>
     );
   }
-
-  const instruction = instructions[currentStep];
-  const context = getStepContext(instructions, currentStep);
 
   return (
     <div className="space-y-4" {...swipeHandlers}>
@@ -135,7 +175,7 @@ export default function GuidePage() {
             }`}
             aria-label={t(voiceEnabled ? 'guide.voiceOff' : 'guide.voiceOn')}
           >
-            <span>{voiceEnabled ? '🔊' : '🔇'}</span>
+            {voiceEnabled ? <Volume2 size={16} /> : <VolumeOff size={16} />}
             <span className="hidden sm:inline">
               {t(voiceEnabled ? 'guide.voiceOff' : 'guide.voiceOn')}
             </span>
@@ -143,34 +183,34 @@ export default function GuidePage() {
         )}
       </div>
 
-      {/* Progress */}
+      {/* Progress — character based with slider */}
       <div className="space-y-2 animate-card-in">
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-            {t('guide.step', {
-              current: currentStep + 1,
-              total: instructions.length,
+            {t('guide.charProgress', {
+              current: charsCompleted,
+              total: totalChars,
             })}
           </p>
           <p className="text-sm font-semibold text-indigo-600 tabular-nums">
-            {Math.round(((currentStep + 1) / instructions.length) * 100)}%
+            {Math.round((charsCompleted / totalChars) * 100)}%
           </p>
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
-          <div
-            className="bg-gradient-to-r from-indigo-500 to-violet-500 h-2.5 rounded-full transition-all duration-500 ease-out"
-            style={{
-              width: `${((currentStep + 1) / instructions.length) * 100}%`,
-            }}
-          />
-        </div>
+        <input
+          type="range"
+          min={1}
+          max={totalChars}
+          value={charsCompleted || 1}
+          onChange={handleSliderChange}
+          className="w-full h-2.5 rounded-full appearance-none cursor-pointer bg-gray-200 dark:bg-gray-700 accent-indigo-600"
+        />
       </div>
 
       {/* Context ribbon */}
       <ContextRibbon instructions={instructions} currentStep={currentStep} context={context} />
 
       {/* Step card */}
-      <StepCard instruction={instruction} t={t} />
+      <StepCard instruction={instruction!} t={t} />
 
       {/* Navigation hint */}
       <p className="text-center text-[11px] text-gray-400 dark:text-gray-500 tracking-wide">
@@ -183,131 +223,25 @@ export default function GuidePage() {
           type="button"
           onClick={previousStep}
           disabled={currentStep === 0}
-          className="btn-press flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 py-3.5 rounded-2xl font-medium text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-all disabled:opacity-30"
+          className="btn-press flex-1 flex items-center justify-center gap-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 py-3.5 rounded-2xl font-medium text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-all disabled:opacity-30"
         >
-          ← {t('guide.previous')}
+          <ArrowLeft size={16} /> {t('guide.previous')}
         </button>
         <button
           type="button"
           onClick={nextStep}
-          className="btn-press flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3.5 rounded-2xl font-semibold text-sm hover:from-indigo-700 hover:to-violet-700 transition-all shadow-md"
+          className="btn-press flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3.5 rounded-2xl font-semibold text-sm hover:from-indigo-700 hover:to-violet-700 transition-all shadow-md"
         >
-          {currentStep === instructions.length - 1
-            ? `✓ ${t('guide.finish')}`
-            : `${t('guide.next')} →`}
+          {currentStep === instructions.length - 1 ? (
+            <>
+              <Check size={16} /> {t('guide.finish')}
+            </>
+          ) : (
+            <>
+              {t('guide.next')} <ArrowRight size={16} />
+            </>
+          )}
         </button>
-      </div>
-    </div>
-  );
-}
-
-function ContextRibbon({
-  instructions,
-  currentStep,
-  context,
-}: {
-  instructions: Instruction[];
-  currentStep: number;
-  context: { before: string[]; after: string[] };
-}) {
-  const currentInstruction = instructions[currentStep];
-  const currentChar = currentInstruction.type === 'code' ? currentInstruction.character : null;
-
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-3 animate-card-in">
-      <div className="flex items-center justify-center gap-1 text-lg font-mono">
-        {context.before.map((char, i) => (
-          <span
-            key={`b-${i}`}
-            className="w-8 h-8 flex items-center justify-center text-gray-300 dark:text-gray-600 text-sm rounded-lg"
-          >
-            {char === ' ' ? '␣' : char}
-          </span>
-        ))}
-        {currentChar && (
-          <span className="w-11 h-11 flex items-center justify-center bg-indigo-50 text-indigo-700 font-bold rounded-xl border-2 border-indigo-400 text-base animate-pulse-ring">
-            {currentChar === ' ' ? '␣' : currentChar}
-          </span>
-        )}
-        {!currentChar && (
-          <span className="w-11 h-11 flex items-center justify-center bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-bold rounded-xl border-2 border-amber-400 dark:border-amber-600 text-xs">
-            ⇌
-          </span>
-        )}
-        {context.after.map((char, i) => (
-          <span
-            key={`a-${i}`}
-            className="w-8 h-8 flex items-center justify-center text-gray-300 dark:text-gray-600 text-sm rounded-lg"
-          >
-            {char === ' ' ? '␣' : char}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function StepCard({
-  instruction,
-  t,
-}: {
-  instruction: Instruction;
-  t: (key: string, options?: Record<string, string | number>) => string;
-}) {
-  if (instruction.type === 'mode_change') {
-    return (
-      <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950 border-2 border-amber-300 dark:border-amber-700 rounded-2xl p-6 text-center space-y-3 shadow-sm animate-card-in">
-        <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-900 flex items-center justify-center text-3xl mx-auto">
-          ⇌
-        </div>
-        <p className="text-amber-800 dark:text-amber-300 font-bold text-lg">
-          {t('guide.switchToMode')}
-        </p>
-        <p className="text-3xl font-bold text-amber-900 dark:text-amber-200">
-          {instruction.toModeName}
-        </p>
-        {instruction.fromModeName && (
-          <p className="text-sm text-amber-600 dark:text-amber-400">
-            {t('guide.from')} <span className="font-medium">{instruction.fromModeName}</span>{' '}
-            {t('guide.to')} <span className="font-medium">{instruction.toModeName}</span>
-          </p>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-center space-y-5 shadow-sm animate-card-in">
-      {/* Character */}
-      <div>
-        <p className="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-semibold mb-2">
-          {t('guide.currentChar')}
-        </p>
-        <p className="text-6xl font-bold text-gray-800 dark:text-gray-100 leading-none">
-          {instruction.character === ' ' ? '␣' : instruction.character}
-        </p>
-      </div>
-
-      {/* Divider */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-gray-100 dark:bg-gray-700" />
-        <span className="text-gray-300 dark:text-gray-600 text-xs">▼</span>
-        <div className="flex-1 h-px bg-gray-100 dark:bg-gray-700" />
-      </div>
-
-      {/* Code */}
-      <div>
-        <p className="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-semibold mb-2">
-          {t('guide.enterCode')}
-        </p>
-        <p className="text-5xl font-mono font-bold text-indigo-600 dark:text-indigo-400 tracking-widest leading-none">
-          {instruction.code}
-        </p>
-      </div>
-
-      {/* Mode badge */}
-      <div className="inline-flex items-center bg-indigo-50 text-indigo-600 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide">
-        {instruction.modeName}
       </div>
     </div>
   );

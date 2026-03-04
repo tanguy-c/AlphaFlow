@@ -1,19 +1,21 @@
+import type { LucideIcon } from 'lucide-react';
+import { BookOpen, Monitor, Moon, Pen, Play, Settings, Sun } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
 import LanguageSwitch from './LanguageSwitch';
 
-const navItems = [
-  { path: '/', labelKey: 'nav.text', icon: '✏' },
-  { path: '/guide', labelKey: 'nav.guide', icon: '▶' },
-  { path: '/codes', labelKey: 'nav.codeGuide', icon: '📋' },
-  { path: '/settings', labelKey: 'nav.settings', icon: '⚙' },
+const navItems: { path: string; labelKey: string; Icon: LucideIcon }[] = [
+  { path: '/', labelKey: 'nav.text', Icon: Pen },
+  { path: '/guide', labelKey: 'nav.guide', Icon: Play },
+  { path: '/codes', labelKey: 'nav.codeGuide', Icon: BookOpen },
+  { path: '/settings', labelKey: 'nav.settings', Icon: Settings },
 ];
 
-const themeIcon: Record<string, string> = {
-  light: '☀️',
-  system: '💻',
-  dark: '🌙',
+const themeIcons: Record<string, LucideIcon> = {
+  light: Sun,
+  system: Monitor,
+  dark: Moon,
 };
 
 const themeLabel: Record<string, string> = {
@@ -48,7 +50,10 @@ export default function Layout() {
               aria-label={t(themeLabel[theme])}
               title={t(themeLabel[theme])}
             >
-              <span className="text-base">{themeIcon[theme]}</span>
+              {(() => {
+                const ThemeIcon = themeIcons[theme];
+                return <ThemeIcon size={18} />;
+              })()}
             </button>
             <LanguageSwitch />
           </div>
@@ -63,7 +68,7 @@ export default function Layout() {
       </main>
 
       {/* Bottom navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 glass border-t border-gray-200/60 dark:border-gray-700/60 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.3)] z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.3)] z-50">
         <div className="max-w-4xl mx-auto flex">
           {navItems.map((item) => (
             <NavLink
@@ -81,11 +86,10 @@ export default function Layout() {
               {({ isActive }) => (
                 <span className="nav-indicator" data-active={isActive}>
                   <span className="flex flex-col items-center">
-                    <span
-                      className={`text-lg mb-0.5 transition-transform duration-200 ${isActive ? 'scale-110' : ''}`}
-                    >
-                      {item.icon}
-                    </span>
+                    <item.Icon
+                      size={20}
+                      className={`mb-0.5 transition-transform duration-200 ${isActive ? 'scale-110' : ''}`}
+                    />
                     <span>{t(item.labelKey)}</span>
                   </span>
                 </span>

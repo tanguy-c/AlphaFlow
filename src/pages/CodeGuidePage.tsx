@@ -1,3 +1,4 @@
+import { BookOpen, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMachineStore } from '../providers/MachineProvider';
@@ -33,8 +34,8 @@ export default function CodeGuidePage() {
   if (!activeMachine) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-up">
-        <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-3xl mb-5">
-          📋
+        <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-5">
+          <BookOpen size={32} className="text-gray-400 dark:text-gray-500" />
         </div>
         <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">
           {t('text.noMachine')}
@@ -59,7 +60,9 @@ export default function CodeGuidePage() {
       {/* Search */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-3 animate-card-in">
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-sm">🔍</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300">
+            <Search size={14} />
+          </span>
           <input
             type="text"
             value={search}

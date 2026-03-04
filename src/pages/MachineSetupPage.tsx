@@ -90,6 +90,10 @@ export default function MachineSetupPage() {
                   {entry.description}
                 </div>
               )}
+              <div className="flex gap-3 mt-1.5 text-xs text-gray-400 dark:text-gray-500">
+                <span>{t('config.catalogModes', { count: entry.modesCount })}</span>
+                <span>{t('config.catalogChars', { count: entry.charsCount })}</span>
+              </div>
             </button>
           ))}
         </div>
