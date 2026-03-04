@@ -17,7 +17,7 @@ function AppContent() {
 
   return (
     <SessionProvider>
-      <HashRouter basename={import.meta.env.BASE_URL}>
+      <HashRouter>
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<TextPage />} />
