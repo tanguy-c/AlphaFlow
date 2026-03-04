@@ -92,7 +92,7 @@ const en = {
       to: 'to',
       voiceOn: 'Voice on',
       voiceOff: 'Voice off',
-      voiceCode: '{{code}}, character {{char}}',
+      voiceCode: '{{code}} for: {{char}}.',
       voiceModeChange: 'Switch to mode {{mode}}',
       voiceSpace: 'space',
     },

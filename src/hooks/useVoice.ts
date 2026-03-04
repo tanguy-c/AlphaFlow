@@ -37,8 +37,10 @@ export function useVoice() {
       if (instruction.type === 'mode_change') {
         speak(t('guide.voiceModeChange', { mode: instruction.toModeName }));
       } else {
-        const charLabel =
-          instruction.character === ' ' ? t('guide.voiceSpace') : instruction.character;
+        let charLabel = instruction.character;
+        if (charLabel === ' ') charLabel = t('guide.voiceSpace');
+        else if (charLabel.length === 1 && /[a-z]/.test(charLabel))
+          charLabel = charLabel.toUpperCase(); // help the voice to spell the letter
         speak(t('guide.voiceCode', { char: charLabel, code: instruction.code }));
       }
     },

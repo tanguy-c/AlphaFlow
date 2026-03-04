@@ -92,7 +92,7 @@ const fr = {
       to: 'vers',
       voiceOn: 'Activer la voix',
       voiceOff: 'Couper la voix',
-      voiceCode: '{{code}}, caractère {{char}}',
+      voiceCode: '{{code}} pour : {{char}}.',
       voiceModeChange: 'Passer en mode {{mode}}',
       voiceSpace: 'espace',
     },
